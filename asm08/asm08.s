@@ -1,10 +1,3 @@
-; Calculate the sum of integers from 1 to N-1.
-; N is passed as the first command-line argument.
-;
-; Examples:
-;   ./asm08 5    -> 10
-;   ./asm08 10   -> 45
-;   ./asm08 100  -> 4950
 
 section .bss
     buffer resb 32
@@ -13,19 +6,14 @@ section .text
     global _start
 
 _start:
-    ; Initial stack:
-    ; [rsp]      = argc
-    ; [rsp + 8]  = argv[0]
-    ; [rsp + 16] = argv[1]
 
     cmp     qword [rsp], 2
     jb      .error
 
-    mov     rsi, [rsp + 16]     ; argv[1]
-    xor     rbx, rbx            ; N = 0
-    xor     r8, r8              ; digit counter
+    mov     rsi, [rsp + 16]
+    xor     rbx, rbx
+    xor     r8, r8
 
-; Convert argv[1] from ASCII to an integer
 .parse:
     movzx   rax, byte [rsi]
 
@@ -48,13 +36,10 @@ _start:
     jmp     .parse
 
 .parsed:
-    ; Reject an empty argument
     test    r8, r8
     jz      .error
-
-    ; Calculate 1 + 2 + ... + (N - 1)
-    xor     rax, rax            ; sum = 0
-    mov     rcx, 1              ; current number = 1
+    xor     rax, rax
+    mov     rcx, 1
 
 .sum_loop:
     cmp     rcx, rbx
@@ -64,18 +49,16 @@ _start:
     inc     rcx
     jmp     .sum_loop
 
-; Convert the result in RAX to ASCII
 .convert:
     lea     rsi, [rel buffer + 31]
 
-    mov     byte [rsi], 10      ; newline
-    mov     rcx, 1              ; output length
+    mov     byte [rsi], 10
+    mov     rcx, 1
     mov     rbx, 10
 
     test    rax, rax
     jnz     .convert_loop
 
-    ; Special case: result is zero
     dec     rsi
     mov     byte [rsi], '0'
     inc     rcx
@@ -83,7 +66,7 @@ _start:
 
 .convert_loop:
     xor     rdx, rdx
-    div     rbx                 ; RAX / 10, remainder in RDX
+    div     rbx
 
     add     dl, '0'
     dec     rsi
@@ -94,19 +77,16 @@ _start:
     jnz     .convert_loop
 
 .print:
-    ; write(stdout, buffer, length)
-    mov     rax, 1              ; sys_write
-    mov     rdi, 1              ; stdout
+    mov     rax, 1
+    mov     rdi, 1
     mov     rdx, rcx
     syscall
 
-    ; exit(0)
-    mov     rax, 60             ; sys_exit
+    mov     rax, 60
     xor     rdi, rdi
     syscall
 
 .error:
-    ; Invalid or missing argument
     mov     rax, 60
     mov     rdi, 1
     syscall

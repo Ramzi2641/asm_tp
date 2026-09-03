@@ -1,7 +1,3 @@
-; asm04.s
-; Read an integer from stdin.
-; Exit 0 if even, 1 if odd, 2 if input is invalid.
-
 section .bss
     buffer resb 64
 
@@ -9,23 +5,20 @@ section .text
     global _start
 
 _start:
-    ; read(0, buffer, 64)
     xor     eax, eax
     xor     edi, edi
     lea     rsi, [rel buffer]
     mov     edx, 64
     syscall
 
-    ; No input or read error
     test    rax, rax
     jle     .invalid
 
-    mov     rcx, rax            ; number of bytes read
+    mov     rcx, rax
     lea     rsi, [rel buffer]
-    xor     r8d, r8d            ; number of digits found
-    xor     r9d, r9d            ; last digit
+    xor     r8d, r8d
+    xor     r9d, r9d
 
-    ; Accept an optional + or - sign
     mov     al, [rsi]
     cmp     al, '-'
     je      .skip_sign
@@ -43,21 +36,19 @@ _start:
 
     mov     al, [rsi]
 
-    ; End of line
-    cmp     al, 10              ; '\n'
+    cmp     al, 10
     je      .check_result
-    cmp     al, 13              ; '\r'
+    cmp     al, 13
     je      .check_result
 
-    ; Character must be between '0' and '9'
     cmp     al, '0'
     jb      .invalid
     cmp     al, '9'
     ja      .invalid
 
     sub     al, '0'
-    mov     r9b, al             ; remember the last digit
-    inc     r8d                 ; at least one digit was found
+    mov     r9b, al
+    inc     r8d
 
     inc     rsi
     dec     rcx
@@ -67,7 +58,6 @@ _start:
     test    r8d, r8d
     jz      .invalid
 
-    ; The parity of the number is the parity of its last digit
     test    r9b, 1
     jnz     .odd
 
@@ -83,5 +73,5 @@ _start:
     mov     edi, 2
 
 .exit:
-    mov     eax, 60             ; sys_exit
+    mov     eax, 60
     syscall

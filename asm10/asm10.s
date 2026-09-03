@@ -1,38 +1,28 @@
-; asm10.s
-; Find the maximum of three numbers passed as command-line arguments.
-; Prints the result to stdout followed by a newline.
 
 section .bss
-    buffer resb 32           ; buffer to hold the printed number
+    buffer resb 32
 
 section .text
 global _start
 
 _start:
-    ; Stack layout at program entry (System V x86-64 ABI):
-    ;   [rsp]      = argc
-    ;   [rsp+8]    = argv[0]  (program name)
-    ;   [rsp+16]   = argv[1]
-    ;   [rsp+24]   = argv[2]
-    ;   [rsp+32]   = argv[3]
 
     mov rax, [rsp]
-    cmp rax, 4                ; expect exactly 3 arguments (+ program name)
+    cmp rax, 4
     jne exit_error
 
-    mov rdi, [rsp+16]         ; argv[1]
+    mov rdi, [rsp+16]
     call atoi
-    mov r8, rax                ; num1
+    mov r8, rax
 
-    mov rdi, [rsp+24]         ; argv[2]
+    mov rdi, [rsp+24]
     call atoi
-    mov r9, rax                ; num2
+    mov r9, rax
 
-    mov rdi, [rsp+32]         ; argv[3]
+    mov rdi, [rsp+32]
     call atoi
-    mov r10, rax                ; num3
+    mov r10, rax
 
-    ; --- find max of r8, r9, r10 ---
     mov rax, r8
     cmp r9, rax
     jle .skip1
@@ -53,15 +43,10 @@ exit_error:
     mov rdi, 1
     call exit_program
 
-; ----------------------------------------------------
-; atoi: convert null-terminated decimal string to int
-; in:  rdi = pointer to string
-; out: rax = integer value
-; ----------------------------------------------------
 atoi:
     push rbx
     mov rbx, rdi
-    xor rcx, rcx              ; rcx = 1 if negative
+    xor rcx, rcx
 
     mov al, [rbx]
     cmp al, '-'
@@ -93,10 +78,6 @@ atoi:
     pop rbx
     ret
 
-; ----------------------------------------------------
-; print_int: print integer in rax (decimal) to stdout
-; handles negative numbers too
-; ----------------------------------------------------
 print_int:
     push rbx
     push rcx
@@ -106,10 +87,10 @@ print_int:
 
     mov rbx, buffer
     add rbx, 31
-    mov byte [rbx], 0         ; null terminator (not used by write, just tidy)
+    mov byte [rbx], 0
 
-    xor rcx, rcx              ; digit counter
-    mov r11, 0                ; sign flag
+    xor rcx, rcx
+    mov r11, 0
 
     cmp rax, 0
     jge .convert
@@ -120,7 +101,7 @@ print_int:
     mov r9, 10
 .divloop:
     xor rdx, rdx
-    div r9                    ; rax / 10 -> rax, remainder rdx
+    div r9
     add rdx, '0'
     dec rbx
     mov [rbx], dl
@@ -135,7 +116,6 @@ print_int:
     inc rcx
 
 .noSign:
-    ; write(1, rbx, rcx)
     mov rax, 1
     mov rdi, 1
     mov rsi, rbx
@@ -149,16 +129,13 @@ print_int:
     pop rbx
     ret
 
-; ----------------------------------------------------
-; print_newline: write a single '\n' to stdout
-; ----------------------------------------------------
 print_newline:
     push rax
     push rdi
     push rsi
     push rdx
 
-    mov byte [buffer], 10     ; '\n'
+    mov byte [buffer], 10
     mov rax, 1
     mov rdi, 1
     mov rsi, buffer
@@ -171,9 +148,6 @@ print_newline:
     pop rax
     ret
 
-; ----------------------------------------------------
-; exit_program: exit(rdi)
-; ----------------------------------------------------
 exit_program:
-    mov rax, 60                ; sys_exit
+    mov rax, 60
     syscall
